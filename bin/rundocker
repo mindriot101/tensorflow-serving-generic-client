@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+
+
+CONTAINER_NAME=tensorflow-serving
+
+docker rm -f ${CONTAINER_NAME} >/dev/null 2>&1 || true
+
+docker run --rm -it -d -p 8900:8500 -p 8901:8501 -v $(pwd)/ssd_inception_v2_coco_2018_01_28:/models --name $CONTAINER_NAME tensorflow/serving:latest --rest_api_port=0 --enable_batching=true --model_config_file=/models/modelconfig.pbtext

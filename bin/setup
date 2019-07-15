@@ -1,0 +1,40 @@
+#!/bin/sh
+
+set -e
+
+test -f image.jpeg || {
+    curl -Lo image.jpeg 'https://miro.medium.com/max/700/1*KCJq8L6-lQDUWRQRcJT2vw.jpeg'
+}
+
+test -d ssd_inception_v2_coco_2018_01_28 || {
+    test -f ssd_inception_v2_coco_2018_01_28.tar.gz || {
+        curl -LO http://download.tensorflow.org/models/object_detection/ssd_inception_v2_coco_2018_01_28.tar.gz
+    }
+
+    tar xf ssd_inception_v2_coco_2018_01_28.tar.gz
+}
+
+test -f ssd_inception_v2_coco_2018_01_28/modelconfig.pbtext || {
+    cat <<EOF > ssd_inception_v2_coco_2018_01_28/modelconfig.pbtext
+model_config_list {
+    config {
+        name: "retinanet",
+        base_path: "/models/retinanet",
+        model_version_policy: {
+            all: {}
+        },
+        model_platform: "tensorflow",
+    }
+}
+EOF
+}
+
+test -d ssd_inception_v2_coco_2018_01_28/retinanet/1 || {
+    mkdir -p ssd_inception_v2_coco_2018_01_28/retinanet
+    mv ssd_inception_v2_coco_2018_01_28/saved_model ssd_inception_v2_coco_2018_01_28/retinanet/1
+}
+
+test -f venv/bin/activate || {
+    python3 -m venv venv
+    ./venv/bin/pip install opencv-python numpy tensorflow tensorflow-serving-api grpcio
+}
